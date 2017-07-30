@@ -1,0 +1,415 @@
+"========================
+"       Vim Basic
+"========================
+set history=700
+
+set autoread
+set nocompatible              " be iMproved, required
+filetype off                  " required
+set number
+
+syntax enable
+syntax on
+
+set t_Co=256
+set smartcase
+
+set smarttab
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4
+
+set ff=unix
+
+filetype indent on
+filetype plugin on
+
+" code-fold setting
+set foldenable
+set foldmethod=manual
+nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
+
+set foldmarker={},=ClosePair('}')
+set foldmethod=marker
+set foldmethod=syntax
+set foldlevel=100       " Don't autofold anything
+set foldopen-=search   " don't open folds when you search into them
+set foldopen-=undo     " don't open folds when you undo stuff
+"set foldcolumn=4
+
+"Auto indent
+set ai
+"Smart indet
+set si
+"C-style indeting
+set cindent
+"Wrap lines
+set wrap
+
+" multi-encoding setting
+if has("multi_byte")
+    set fileencodings=ucs-bom,utf-8,cp936,gb18030,big5,euc-jp,sjis,euc-kr,ucs-2le,latin1
+    if v:lang =~ "^zh_CN"
+        " Use cp936 to support GBK, euc-cn == gb2312
+        set encoding=chinese
+        set termencoding=chinese
+        set fileencoding=chinese
+    elseif v:lang =~ "^zh_TW"
+        " cp950, big5 or euc-tw
+        " Are they equal to each other?
+        set encoding=taiwan
+        set termencoding=taiwan
+        set fileencoding=taiwan
+    endif
+    " Detect UTF-8 locale, and replace CJK setting if needed
+    if v:lang =~ "utf8$" || v:lang =~ "UTF-8$"
+        set encoding=utf-8
+        set termencoding=utf-8
+        set fileencoding=utf-8
+    endif
+endif
+"=======
+
+" Avoid clearing hilight definition in plugins
+if !exists("g:vimrc_loaded")
+    "Enable syntax hl
+    syntax enable
+
+    " color scheme
+    if has("gui_running")
+        set guioptions-=T
+        set guioptions-=m
+        set guioptions-=L
+        set guioptions-=r
+        colorscheme darkblue_my
+        "hi normal guibg=#294d4a
+        set cursorline
+    else
+        colorscheme desert_my
+    endif " has
+endif " exists(...)
+"=======
+
+autocmd BufEnter * :syntax sync fromstart
+
+"Turn on WiLd menu
+set wildmenu
+
+"Always show current position
+set ruler
+
+"The commandbar is 2 high
+set cmdheight=2
+
+"Do not redraw, when running macros.. lazyredraw
+set lz
+
+"Bbackspace and cursor keys wrap to
+set whichwrap+=<,>
+
+"Basically you press * or # to search for the current selection !! Really useful
+vnoremap <silent> * :call VisualSearch('f')<CR>
+vnoremap <silent> # :call VisualSearch('b')<CR>
+
+"Include search
+set incsearch
+
+"Highlight search things
+set hlsearch
+
+"Set magic on
+set magic
+
+"No sound on errors.
+set noerrorbells
+set novb t_vb=
+
+""""""""""""""""""""""""""""""
+" Visual
+" From an idea by Michael Naumann
+function! VisualSearch(direction) range
+    let l:saved_reg = @"
+    execute "normal! vgvy"
+    let l:pattern = escape(@", '\\/.*$^~[]')
+    let l:pattern = substitute(l:pattern, "\n$", "", "")
+    if a:direction == 'b'
+        execute "normal ?" . l:pattern . "^M"
+    else
+        execute "normal /" . l:pattern . "^M"
+    endif
+    let @/ = l:pattern
+    let @" = l:saved_reg
+endfunction
+
+
+""""""""""""""""""""""""""""""
+" Statusline
+""""""""""""""""""""""""""""""
+"Always hide the statusline
+set laststatus=2
+
+function! CurDir()
+ let curdir = substitute(getcwd(), '/home/easwy/', "~/", "g")
+ return curdir
+endfunction
+
+"Format the statusline
+"set statusline=\ %F%m%r%h\ %w\ \ CWD:\ %r%{CurDir()}%h\ \ \ Line:\ %l/%L:%c
+
+"Smart way to move btw. windows
+nmap <C-j> <C-W>j
+nmap <C-k> <C-W>k
+nmap <C-h> <C-W>h
+nmap <C-l> <C-W>l
+
+"Tab configuration
+nmap <C-n> :tabn<CR>
+nmap <C-p> :tabp<CR>
+nmap <C-c> :tabc<CR>
+nmap <C-o> :tabo<CR>
+nmap <C-i> :tabnew ~/source<CR>
+
+
+"Restore cursor to file position in previous editing session
+set viminfo='10,\"100,:20,n~/.viminfo
+au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
+
+"Turn backup off
+set nobackup
+set nowb
+"set noswapfile
+
+" Don't close window, when deleting a buffer
+command! Bclose call <SID>BufcloseCloseIt()
+
+function! <SID>BufcloseCloseIt()
+   let l:currentBufNum = bufnr("%")
+   let l:alternateBufNum = bufnr("#")
+   if buflisted(l:alternateBufNum)
+     buffer #
+   else
+     bnext
+   endif
+   if bufnr("%") == l:currentBufNum
+     new
+   endif
+   if buflisted(l:currentBufNum)
+     execute("bdelete ".l:currentBufNum)
+   endif
+endfunction
+
+"auto complete for bracket
+inoremap ( ()<Esc>i
+inoremap [ []<Esc>i
+"inoremap { {}<Esc>i
+inoremap { {}<Esc>i
+autocmd Syntax html,vim inoremap < <lt>><Esc>i| inoremap > <c-r>=ClosePair('>')<CR>
+inoremap ) <c-r>=ClosePair(')')<CR>
+inoremap ] <c-r>=ClosePair(']')<CR>
+inoremap } <c-r>=ClosePair('}')<CR>
+"inoremap } <c-r>=CloseBracket()<CR>
+inoremap " <c-r>=QuoteDelim('"')<CR>
+inoremap ' <c-r>=QuoteDelim("'")<CR>
+
+function ClosePair(char)
+    if getline('.')[col('.') - 1] == a:char
+        return "\<Right>"
+    else
+        return a:char
+    endif
+endf
+
+function CloseBracket()
+    if match(getline(line('.') + 1), '\s*}') < 0
+        return "\<CR>}"
+    else
+        return "\<Esc>j0f}a"
+    endif
+endf
+
+function QuoteDelim(char)
+    let line = getline('.')
+    let col = col('.')
+    if line[col - 2] == "\\"
+        return a:char
+    elseif line[col - 1] == a:char
+        return "\<Right>"
+    else
+        return a:char.a:char."\<Esc>i"
+    endif
+endf
+
+func SkipPair()  
+    if getline('.')[col('.') - 1] == ')' || getline('.')[col('.') - 1] == ']' || getline('.')[col('.') - 1] == '"' || getline('.')[col('.') - 1] == "'" || getline('.')[col('.') - 1] == '}'  
+        return "\<ESC>la"  
+    else  
+        return "\t"  
+    endif  
+endfunc  
+" 将tab键绑定为跳出括号  
+inoremap <S-CR> <c-r>=SkipPair()<CR>
+
+
+"========================
+"       Vundle 
+"========================
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+
+" The following are examples of different formats supported.
+" Keep Plugin commands between vundle#begin/end.
+" plugin on GitHub repo
+Plugin 'tpope/vim-fugitive'
+" plugin from http://vim-scripts.org/vim/scripts.html
+" Plugin 'L9'
+" Git plugin not hosted on GitHub
+"Plugin 'git://git.wincent.com/command-t.git'
+" git repos on your local machine (i.e. when working on your own plugin)
+"------Plugin 'file:///home/gmarik/path/to/plugin'
+" The sparkup vim script is in a subdirectory of this repo called vim.
+" Pass the path to set the runtimepath properly.
+Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
+" Install L9 and avoid a Naming conflict if you've already installed a
+" different version somewhere else.
+" Plugin 'ascenator/L9', {'name': 'newL9'}
+
+" All of your Plugins must be added before the following line
+"======================
+"   PLUGINS
+"=====================
+Plugin 'majutsushi/tagbar'
+Plugin 'taglist.vim'
+Plugin 'scrooloose/nerdtree'
+Plugin 'ervandew/supertab'
+Plugin 'Valloric/YouCompleteMe' 
+
+call vundle#end()            " required
+filetype plugin indent on    " required
+" To ignore plugin indent changes, instead use:
+"filetype plugin on
+"
+" Brief help
+" :PluginList       - lists configured plugins
+" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
+" :PluginSearch foo - searches for foo; append `!` to refresh local cache
+" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
+"
+" see :h vundle for more details or wiki for FAQ
+" Put your non-Plugin stuff after this line
+
+
+"=======================
+"   ctags
+"=======================
+au BufWritePost *.c,*.cpp,*.h silent! !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q .&
+"set tags=tags;
+"set autochdir
+
+
+"=======================
+"   Tagbar
+"=======================
+nmap <Leader>tb :TagbarToggle<CR>
+nmap <F8> :TagbarToggle<CR>
+let g:tagbar_ctags_bin='/usr/bin/ctags'
+let g:tagbar_width=30
+let g:tagbar_right=1
+
+
+"=======================
+"   Taglist
+"=======================
+let Tlist_Ctags_Cmd = '/usr/bin/ctags'
+let Tlist_Show_One_File = 1
+let Tlist_Exit_OnlyWindow = 1
+let Tlist_Use_Right_Window = 1
+let Tlist_WinWidt =30
+nmap <silent> <leader>tl :Tlist<cr>
+
+
+"=======================
+"   cscope setting 
+"=======================
+if has("cscope")
+    set csprg=/usr/bin/cscope
+    set csto=1
+    set cst
+    set nocsverb
+    "add any database in current directory
+    if filereadable("cscope.out")
+        cs add cscope.out
+    endif
+    set csverb
+endif
+
+nmap <C-m>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+nmap <C-m>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+nmap <C-m>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+nmap <C-m>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+nmap <C-m>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+nmap <C-m>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+nmap <C-m>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+nmap <C-m>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+
+
+"=======================
+"   NERDTree setting 
+"=======================
+let NERDTreeWinPos='left'
+let NERDTreeWinSize=30
+nmap <silent> <leader>nt :NERDTreeToggle<cr>
+map <C-n> :NERDTreeToggle<CR>
+map <C-n>m :NERDTreeMirror<CR>
+"let g:NERDTreeDirArrowExpandable = '▸'
+"let g:NERDTreeDirArrowCollapsible = '▾'
+
+
+"=======================
+"   supertab setting 
+"=======================
+let g:SuperTabPluginLoaded=1 " Avoid load SuperTab Plugin
+let g:SuperTabDefaultCompletionType='context'
+let g:SuperTabContextDefaultCompletionType='<c-p>'
+
+
+"=======================
+"   bufexplorer setting 
+"=======================
+let g:bufExplorerDefaultHelp=0       " Do not show default help.
+let g:bufExplorerShowRelativePath=1  " Show relative paths.
+let g:bufExplorerSortBy='mru'        " Sort by most recently used.
+let g:bufExplorerSplitRight=0        " Split left.
+let g:bufExplorerSplitVertical=1     " Split vertically.
+let g:bufExplorerSplitVertSize = 30  " Split width
+let g:bufExplorerUseCurrentWindow=1  " Open in new window.
+let g:bufExplorerMaxHeight=25        " Max height
+
+
+"=======================
+"   ShowMarks setting 
+"=======================
+let g:ycm_server_python_interpreter='/usr/bin/python'
+let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
+
+
+"=======================
+"   ShowMarks setting 
+"=======================
+
+
+
+"=======================
+"   Mark Browser setting 
+"=======================
+
+
+"=======================
+"   Quickfix setting 
+"=======================
