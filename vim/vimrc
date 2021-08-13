@@ -1,11 +1,13 @@
 "========================
 "       Vim Basic
 "========================
+" set color scheme
+colorscheme molokai
+
 set history=700
 
 set autoread
 set nocompatible              " be iMproved, required
-filetype off                  " required
 set number
 
 syntax enable
@@ -22,15 +24,16 @@ set softtabstop=4
 
 set ff=unix
 
+filetype off                  " required
 filetype indent on
 filetype plugin on
+filetype plugin indent on    " required
 
 " code-fold setting
 set foldenable
 set foldmethod=manual
 nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
 
-set foldmarker={},=ClosePair('}')
 set foldmethod=marker
 set foldmethod=syntax
 set foldlevel=100       " Don't autofold anything
@@ -46,7 +49,52 @@ set si
 set cindent
 "Wrap lines
 set wrap
+" sign column on the left
+set signcolumn=no
+" set backspace
+set backspace=indent,eol,start
 
+autocmd BufEnter * :syntax sync fromstart
+
+"Turn on WiLd menu
+set wildmenu
+"Always show current position
+set ruler
+"The commandbar is 2 high
+set cmdheight=2
+"Do not redraw, when running macros.. lazyredraw
+set lz
+"Bbackspace and cursor keys wrap to
+set whichwrap+=<,>
+"Include search
+set incsearch
+"Highlight search things
+set hlsearch
+"Set magic on
+set magic
+"No sound on errors.
+set noerrorbells
+
+"Restore cursor to file position in previous editing session
+set viminfo='10,\"100,:20,n~/.viminfo
+au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
+
+"Smart way to move btw. windows
+nmap <C-j> <C-W>j
+nmap <C-k> <C-W>k
+nmap <C-h> <C-W>h
+nmap <C-l> <C-W>l
+
+"Tab configuration
+nmap <C-n> :tabn<CR>
+nmap <C-p> :tabp<CR>
+"nmap <C-c> :tabc<CR>
+"nmap <C-o> :tabo<CR>
+
+"Turn backup off
+set nobackup
+set nowb
+"
 " multi-encoding setting
 if has("multi_byte")
     set fileencodings=ucs-bom,utf-8,cp936,gb18030,big5,euc-jp,sjis,euc-kr,ucs-2le,latin1
@@ -69,65 +117,10 @@ if has("multi_byte")
         set fileencoding=utf-8
     endif
 endif
-"=======
-
-" Avoid clearing hilight definition in plugins
-if !exists("g:vimrc_loaded")
-    "Enable syntax hl
-    syntax enable
-
-    " color scheme
-    if has("gui_running")
-        set guioptions-=T
-        set guioptions-=m
-        set guioptions-=L
-        set guioptions-=r
-        colorscheme darkblue_my
-        "hi normal guibg=#294d4a
-        set cursorline
-    else
-        colorscheme desert_my
-    endif " has
-endif " exists(...)
-"=======
-
-autocmd BufEnter * :syntax sync fromstart
-
-"Turn on WiLd menu
-set wildmenu
-
-"Always show current position
-set ruler
-
-"The commandbar is 2 high
-set cmdheight=2
-
-"Do not redraw, when running macros.. lazyredraw
-set lz
-
-"Bbackspace and cursor keys wrap to
-set whichwrap+=<,>
 
 "Basically you press * or # to search for the current selection !! Really useful
 vnoremap <silent> * :call VisualSearch('f')<CR>
 vnoremap <silent> # :call VisualSearch('b')<CR>
-
-"Include search
-set incsearch
-
-"Highlight search things
-set hlsearch
-
-"Set magic on
-set magic
-
-"No sound on errors.
-set noerrorbells
-set novb t_vb=
-
-""""""""""""""""""""""""""""""
-" Visual
-" From an idea by Michael Naumann
 function! VisualSearch(direction) range
     let l:saved_reg = @"
     execute "normal! vgvy"
@@ -142,47 +135,8 @@ function! VisualSearch(direction) range
     let @" = l:saved_reg
 endfunction
 
-
-""""""""""""""""""""""""""""""
-" Statusline
-""""""""""""""""""""""""""""""
-"Always hide the statusline
-set laststatus=2
-
-function! CurDir()
- let curdir = substitute(getcwd(), '/home/easwy/', "~/", "g")
- return curdir
-endfunction
-
-"Format the statusline
-"set statusline=\ %F%m%r%h\ %w\ \ CWD:\ %r%{CurDir()}%h\ \ \ Line:\ %l/%L:%c
-
-"Smart way to move btw. windows
-nmap <C-j> <C-W>j
-nmap <C-k> <C-W>k
-nmap <C-h> <C-W>h
-nmap <C-l> <C-W>l
-
-"Tab configuration
-nmap <C-n> :tabn<CR>
-nmap <C-p> :tabp<CR>
-nmap <C-c> :tabc<CR>
-nmap <C-o> :tabo<CR>
-nmap <C-i> :tabnew ~/source<CR>
-
-
-"Restore cursor to file position in previous editing session
-set viminfo='10,\"100,:20,n~/.viminfo
-au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
-
-"Turn backup off
-set nobackup
-set nowb
-"set noswapfile
-
 " Don't close window, when deleting a buffer
 command! Bclose call <SID>BufcloseCloseIt()
-
 function! <SID>BufcloseCloseIt()
    let l:currentBufNum = bufnr("%")
    let l:alternateBufNum = bufnr("#")
@@ -199,116 +153,47 @@ function! <SID>BufcloseCloseIt()
    endif
 endfunction
 
-"auto complete for bracket
-inoremap ( ()<Esc>i
-inoremap [ []<Esc>i
-"inoremap { {}<Esc>i
-inoremap { {}<Esc>i
-autocmd Syntax html,vim inoremap < <lt>><Esc>i| inoremap > <c-r>=ClosePair('>')<CR>
-inoremap ) <c-r>=ClosePair(')')<CR>
-inoremap ] <c-r>=ClosePair(']')<CR>
-inoremap } <c-r>=ClosePair('}')<CR>
-"inoremap } <c-r>=CloseBracket()<CR>
-inoremap " <c-r>=QuoteDelim('"')<CR>
-inoremap ' <c-r>=QuoteDelim("'")<CR>
-
-function ClosePair(char)
-    if getline('.')[col('.') - 1] == a:char
-        return "\<Right>"
-    else
-        return a:char
-    endif
-endf
-
-function CloseBracket()
-    if match(getline(line('.') + 1), '\s*}') < 0
-        return "\<CR>}"
-    else
-        return "\<Esc>j0f}a"
-    endif
-endf
-
-function QuoteDelim(char)
-    let line = getline('.')
-    let col = col('.')
-    if line[col - 2] == "\\"
-        return a:char
-    elseif line[col - 1] == a:char
-        return "\<Right>"
-    else
-        return a:char.a:char."\<Esc>i"
-    endif
-endf
-
-func SkipPair()  
-    if getline('.')[col('.') - 1] == ')' || getline('.')[col('.') - 1] == ']' || getline('.')[col('.') - 1] == '"' || getline('.')[col('.') - 1] == "'" || getline('.')[col('.') - 1] == '}'  
-        return "\<ESC>la"  
-    else  
-        return "\t"  
-    endif  
-endfunc  
-" 将tab键绑定为跳出括号  
-inoremap <S-CR> <c-r>=SkipPair()<CR>
-
 
 "========================
-"       Vundle 
+"       VimPlugins
 "========================
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
-
-" let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
-
-" The following are examples of different formats supported.
-" Keep Plugin commands between vundle#begin/end.
-" plugin on GitHub repo
-Plugin 'tpope/vim-fugitive'
-" plugin from http://vim-scripts.org/vim/scripts.html
-" Plugin 'L9'
-" Git plugin not hosted on GitHub
-"Plugin 'git://git.wincent.com/command-t.git'
-" git repos on your local machine (i.e. when working on your own plugin)
-"------Plugin 'file:///home/gmarik/path/to/plugin'
-" The sparkup vim script is in a subdirectory of this repo called vim.
-" Pass the path to set the runtimepath properly.
-Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
-" Install L9 and avoid a Naming conflict if you've already installed a
-" different version somewhere else.
-" Plugin 'ascenator/L9', {'name': 'newL9'}
-
-" All of your Plugins must be added before the following line
-"======================
-"   PLUGINS
-"=====================
-Plugin 'majutsushi/tagbar'
-Plugin 'taglist.vim'
-Plugin 'scrooloose/nerdtree'
-Plugin 'ervandew/supertab'
-Plugin 'Valloric/YouCompleteMe' 
-
-call vundle#end()            " required
-filetype plugin indent on    " required
-" To ignore plugin indent changes, instead use:
-"filetype plugin on
-"
-" Brief help
-" :PluginList       - lists configured plugins
-" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
-" :PluginSearch foo - searches for foo; append `!` to refresh local cache
-" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
-"
-" see :h vundle for more details or wiki for FAQ
-" Put your non-Plugin stuff after this line
+call plug#begin('~/.vim/plugged')
+    " vim command tool
+    Plug 'mhinz/vim-startify'
+    Plug 'liuchengxu/vim-which-key', { 'on': ['WhichKey', 'WhichKey!']  }
+    " vim ctags
+    Plug 'ludovicchabant/vim-gutentags'
+    Plug 'preservim/tagbar'
+    Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}
+    " C/C++ code check
+    " Plug 'dense-analysis/ale'
+    " Plug 'Valloric/YouCompleteMe' 
+    Plug 'octol/vim-cpp-enhanced-highlight'
+    " vim and input tools
+    Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension'}
+    Plug 'jiangmiao/auto-pairs'
+    Plug 'tpope/vim-surround'
+    " vim display
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
+    Plug 'luochen1990/rainbow'
+    " GIT
+    Plug 'tpope/vim-fugitive'
+    if has('nvim') || has('patch-8.0.902')
+        Plug 'mhinz/vim-signify', {'on': 'SignifyToggle'}
+    else
+        Plug 'mhinz/vim-signify', { 'branch': 'legacy', 'on' : 'SignifyToggle' }
+    endif
+call plug#end()
 
 
 "=======================
 "   ctags
 "=======================
-au BufWritePost *.c,*.cpp,*.h silent! !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q .&
+" TODO install universal-ctags and then correct ctags path
+let CTAGS_PATH='/usr/local/bin/ctags'
+set tags=./.tags;,.tags
+"au BufWritePost *.c,*.cpp,*.h silent! !ctags  --recurse=yes --c++-kinds=+p --fields=+iaS --extra=+q .&
 "set tags=tags;
 "set autochdir
 
@@ -318,27 +203,16 @@ au BufWritePost *.c,*.cpp,*.h silent! !ctags -R --c++-kinds=+p --fields=+iaS --e
 "=======================
 nmap <Leader>tb :TagbarToggle<CR>
 nmap <F8> :TagbarToggle<CR>
-let g:tagbar_ctags_bin='/usr/bin/ctags'
+let g:tagbar_ctags_bin=CTAGS_PATH
 let g:tagbar_width=30
 let g:tagbar_right=1
-
-
-"=======================
-"   Taglist
-"=======================
-let Tlist_Ctags_Cmd = '/usr/bin/ctags'
-let Tlist_Show_One_File = 1
-let Tlist_Exit_OnlyWindow = 1
-let Tlist_Use_Right_Window = 1
-let Tlist_WinWidt =30
-nmap <silent> <leader>tl :Tlist<cr>
 
 
 "=======================
 "   cscope setting 
 "=======================
 if has("cscope")
-    set csprg=/usr/bin/cscope
+    set csprg=/usr/local/bin/cscope
     set csto=1
     set cst
     set nocsverb
@@ -348,15 +222,16 @@ if has("cscope")
     endif
     set csverb
 endif
+" set tags+=/Users/jansonpang/.vim/systags
 
-nmap <C-m>s :cs find s <C-R>=expand("<cword>")<CR><CR>
-nmap <C-m>g :cs find g <C-R>=expand("<cword>")<CR><CR>
-nmap <C-m>c :cs find c <C-R>=expand("<cword>")<CR><CR>
-nmap <C-m>t :cs find t <C-R>=expand("<cword>")<CR><CR>
-nmap <C-m>e :cs find e <C-R>=expand("<cword>")<CR><CR>
-nmap <C-m>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
-nmap <C-m>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
-nmap <C-m>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+nmap <C-\>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+nmap <C-\>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+nmap <C-\>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+nmap <C-\>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+nmap <C-\>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+nmap <C-\>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+nmap <C-\>i :cs find i <C-R>=expand("<cfile>")<CR><CR>
+nmap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>
 
 
 "=======================
@@ -365,8 +240,8 @@ nmap <C-m>d :cs find d <C-R>=expand("<cword>")<CR><CR>
 let NERDTreeWinPos='left'
 let NERDTreeWinSize=30
 nmap <silent> <leader>nt :NERDTreeToggle<cr>
-map <C-n> :NERDTreeToggle<CR>
-map <C-n>m :NERDTreeMirror<CR>
+"map <C-n> :NERDTreeToggle<CR>
+"map <C-n>m :NERDTreeMirror<CR>
 "let g:NERDTreeDirArrowExpandable = '▸'
 "let g:NERDTreeDirArrowCollapsible = '▾'
 
@@ -400,16 +275,88 @@ let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
 
 
 "=======================
-"   ShowMarks setting 
+"   signify setting 
 "=======================
+" default updatetime 4000ms is not good for async update
+set updatetime=100
+nmap <silent> <leader>sg :SignifyToggle<cr>
+nmap <silent> <leader>sgd :SignifyDiff<cr>
+"map <C-n> :SignifyToggle<CR>
 
 
+"=======================
+"   ALE setting 
+"=======================
+let g:ale_linters_explicit = 1
+let g:ale_completion_delay = 500
+let g:ale_echo_delay = 20
+let g:ale_lint_delay = 500
+let g:ale_echo_msg_format = '[%linter%] %code: %%s'
+let g:ale_lint_on_text_changed = 'normal'
+let g:ale_lint_on_insert_leave = 1
+let g:airline#extensions#ale#enabled = 1
+
+let g:ale_c_gcc_options = '-Wall -O2 -std=c99'
+let g:ale_cpp_gcc_options = '-Wall -O2 -std=c++14'
+let g:ale_c_cppcheck_options = ''
+let g:ale_cpp_cppcheck_options = ''
 
 "=======================
-"   Mark Browser setting 
+"   gutentags setting 
 "=======================
+" gutentags 搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归
+let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
+
+" 所生成的数据文件的名称
+let g:gutentags_ctags_tagfile = '.tags'
+
+" 将自动生成的 tags 文件全部放入 ~/.vim/cache/tags 目录中，避免污染工程目录
+let s:vim_tags = expand('~/.vim/cache/tags')
+let g:gutentags_cache_dir = s:vim_tags
+
+" 配置 ctags 的参数
+let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
+let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
+let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
+
+" 检测 ~/.vim/cache/tags 不存在就新建
+if !isdirectory(s:vim_tags)
+   silent! call mkdir(s:vim_tags, 'p')
+endif
 
 
 "=======================
-"   Quickfix setting 
+"   LeaderF setting 
 "=======================
+let g:Lf_WindowPosition = 'popup'
+let g:Lf_PreviewInPopup = 1
+""let g:Lf_ShortcutF = "<silent> <leader>lff"
+nmap <silent><leader>lf :Leaderf
+
+
+"=======================
+"   WhichKey setting 
+"=======================
+"nmap <silent> <leader>wk: WhichKey<cr>
+"nnoremap <silent> <leader> :WhichKey '<Space>'<CR>
+"map <C-n> :WhichKey<CR>
+set timeoutlen=500
+"let g:mapleader = "\\"
+"let g:maplocalleader = ","
+"nnoremap <silent> <leader> :WhichKey '<Space>'<CR>
+"nnoremap <silent> <localleader> :WhichKey ','<CR>
+"=======================
+"   rainbow setting 
+"=======================
+let g:rainbow_active = 1 "set to 0 if you want to enable it later via :RainbowToggle"
+
+
+"=======================
+"   cpp-highlight setting 
+"=======================
+let g:cpp_class_scope_highlight = 1
+let g:cpp_member_variable_highlight = 1
+let g:cpp_posix_standard = 1
+let g:cpp_class_decl_highlight = 1
+let g:cpp_experimental_template_highlight = 1
+let g:cpp_concepts_highlight = 1
