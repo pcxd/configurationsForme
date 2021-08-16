@@ -50,7 +50,7 @@ set cindent
 "Wrap lines
 set wrap
 " sign column on the left
-set signcolumn=no
+" set signcolumn=no
 " set backspace
 set backspace=indent,eol,start
 
@@ -332,6 +332,10 @@ let g:Lf_WindowPosition = 'popup'
 let g:Lf_PreviewInPopup = 1
 ""let g:Lf_ShortcutF = "<silent> <leader>lff"
 nmap <silent><leader>lf :Leaderf
+nmap <silent><leader>lfF :Leaderf file<cr>
+nmap <silent><leader>lff :Leaderf function<cr>
+nmap <silent><leader>lfb :Leaderf buffer<cr>
+nmap <silent><leader>lfw :Leaderf window<cr>
 
 
 "=======================
